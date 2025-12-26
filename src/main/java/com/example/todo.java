@@ -4,6 +4,8 @@ import java.util.regex.Pattern;
 
 import com.microsoft.playwright.*;
 import com.microsoft.playwright.options.AriaRole;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 public class todo {
     Page page;
@@ -14,19 +16,31 @@ public class todo {
 
     public void performTodoFlow() throws InterruptedException {
 
+        LocalDate tomorrow = LocalDate.now().plusDays(1);
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        String futureDate = tomorrow.format(formatter);
+
+
         page.waitForTimeout(2000);
 
-        page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("To Do")).click();
-        Thread.sleep(3000);
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Create")).click();
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("To Do")).click();
+
+    
         page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Task Name*")).fill(main.taskName1);
         page.locator("div").filter(new Locator.FilterOptions().setHasText(Pattern.compile("^Add More \\(Optional\\)$")))
                 .click();
         page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Description")).fill(main.description1);
-        page.locator("input[name=\"dueDate\"]").fill("2025-11-29");
+
+        page.locator("input[name='dueDate']").fill(futureDate);
+
         page.getByTestId("modal").getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName("Create")).click();
 
         System.out.println("Todo create Done");
+        Thread.sleep(3000);
+
+        page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("To Do")).click();
         Thread.sleep(3000);
 
         page.locator("button[aria-haspopup='menu']").click();
@@ -38,7 +52,8 @@ public class todo {
         page.locator(".lucide.lucide-chevron-down").first().click();
         page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Description"))
                 .fill(main.description1 + " update");
-        page.locator("input[name=\"dueDate\"]").fill("2025-11-30");
+        
+        page.locator("input[name='dueDate']").fill(futureDate);
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Update")).click();
         Thread.sleep(2000);
 

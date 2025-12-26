@@ -13,12 +13,15 @@ public class login {
 
     public void performlogin(String email, String password) throws InterruptedException {
 
+        page.navigate("https://stag-webapp.incenti.ai/login");
+
         page.getByLabel("Email").fill(main.email);
         page.getByLabel("Password").fill(main.password);
+        
 
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Sign In")).click();
-        System.out.println("Login Done");
         Thread.sleep(3000);
-
+        System.out.println("Login Done");
+        
     }
 }
