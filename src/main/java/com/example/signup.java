@@ -47,18 +47,23 @@ boolean otpFound = false;
 int maxAttempts = 3;
 
 for (int attempt = 1; attempt <= maxAttempts; attempt++) {
-  
-    page.waitForTimeout(4000);
+
+    cc.waitForTimeout(4000);
 
     for (Frame frame : cc.frames()) {
-        String bodyText = "";
+        String bodyText;
+
         try {
             bodyText = frame.innerText("body");
         } catch (Exception e) {
+            continue;
         }
 
-        if (bodyText != null && bodyText.contains("stag-webapp") || bodyText.contains("Incenti")) {
+        if (bodyText != null &&
+           (bodyText.contains("stag-webapp") || bodyText.contains("Incenti"))) {
+
             otp = main.extractSixDigitOtp(bodyText);
+
             if (otp != null) {
                 otpFound = true;
                 break;
@@ -66,24 +71,32 @@ for (int attempt = 1; attempt <= maxAttempts; attempt++) {
         }
     }
 
-    if (otpFound) break;
+    if (otpFound) {
+        break;
+    }
+
     try {
-        cc.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Refresh Mailbox")).click();
+        cc.getByRole(AriaRole.BUTTON,
+                new Page.GetByRoleOptions().setName("Refresh Mailbox"))
+          .click();
     } catch (Exception e) {
         
     }
 }
 
 if (!otpFound) {
+    cc.close();
+    context.close();
 
+    System.out.println("OTP not sent, we can't find mail, please try again");
+    System.exit(0);   
 } else {
-    System.out.println("got OTP from mail");
+    
 }
 
 cc.close();
+
 Thread.sleep(3000);
-
-
     if (otp != null && otp.length() == 6) {
       for (int i = 0; i < 6; i++) {
         String digit = String.valueOf(otp.charAt(i));

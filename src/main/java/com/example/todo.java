@@ -76,5 +76,4 @@ public class todo {
         System.out.println("✅ your first name :- " + main.firstName);
         System.out.println("✅ your last name :- " + main.lastName);
     }
-
 }
