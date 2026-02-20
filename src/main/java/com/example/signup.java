@@ -44,54 +44,59 @@ Thread.sleep(3000);
 cc.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("View Mailbox")).first().click();
 
 boolean otpFound = false;
-int maxAttempts = 3;
+int maxAttempts = 5;
 
 for (int attempt = 1; attempt <= maxAttempts; attempt++) {
 
-    cc.waitForTimeout(4000);
+    cc.waitForLoadState();
+    cc.waitForTimeout(2000);
 
     for (Frame frame : cc.frames()) {
-        String bodyText;
 
         try {
-            bodyText = frame.innerText("body");
-        } catch (Exception e) {
-            continue;
-        }
+            if (frame.isDetached()) continue;
 
-        if (bodyText != null &&
-           (bodyText.contains("stag-webapp") || bodyText.contains("Incenti"))) {
+            String bodyText = frame.locator("body").innerText();
 
-            otp = main.extractSixDigitOtp(bodyText);
+            if (bodyText != null && !bodyText.isEmpty()) {
 
-            if (otp != null) {
-                otpFound = true;
-                break;
+                java.util.regex.Pattern pattern =
+                        java.util.regex.Pattern.compile("\\b\\d{6}\\b");
+
+                java.util.regex.Matcher matcher =
+                        pattern.matcher(bodyText);
+
+                if (matcher.find()) {
+                    otp = matcher.group();
+                    System.out.println("✅ OTP Found: " + otp);
+                    otpFound = true;
+                    break;
+                }
             }
+
+        } catch (Exception e) {
         }
     }
 
-    if (otpFound) {
-        break;
-    }
+    if (otpFound) break;
+
+    System.out.println("OTP not found, refreshing mailbox...");
 
     try {
         cc.getByRole(AriaRole.BUTTON,
-                new Page.GetByRoleOptions().setName("Refresh Mailbox"))
+                new Page.GetByRoleOptions().setName("Refresh"))
           .click();
     } catch (Exception e) {
-        
+        System.out.println("Refresh failed: " + e.getMessage());
     }
+
+    cc.waitForTimeout(2000);
 }
 
 if (!otpFound) {
+    System.out.println("❌ OTP not found after attempts");
     cc.close();
-    context.close();
-
-    System.out.println("OTP not sent, we can't find mail, please try again");
-    System.exit(0);   
-} else {
-    
+    return;
 }
 
 cc.close();
